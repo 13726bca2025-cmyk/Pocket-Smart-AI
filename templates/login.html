@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Sign in · Pocket Smart AI</title>
+    <style>
+      * { box-sizing: border-box; }
+      body {
+        min-height: 100vh;
+        margin: 0;
+        padding: 24px;
+        display: grid;
+        place-items: center;
+        background: linear-gradient(135deg, #f4f7fb, #e8eef7);
+        color: #253247;
+        font-family: Arial, sans-serif;
+      }
+      .login-card {
+        width: 100%;
+        max-width: 420px;
+        padding: 36px;
+        background: #fff;
+        border-radius: 14px;
+        box-shadow: 0 16px 40px rgba(34, 54, 82, .12);
+      }
+      h1 { margin: 0 0 8px; color: #17263c; font-size: 1.7rem; }
+      .subtitle { margin: 0 0 28px; color: #718096; }
+      form { display: grid; gap: 16px; }
+      label { display: block; margin-bottom: 7px; font-size: .92rem; font-weight: 700; }
+      input {
+        width: 100%;
+        padding: 12px 13px;
+        border: 1px solid #d6deea;
+        border-radius: 8px;
+        font: inherit;
+      }
+      input:focus { outline: 2px solid #bfdbfe; border-color: #3b82f6; }
+      button {
+        padding: 13px;
+        border: 0;
+        border-radius: 8px;
+        background: #2563eb;
+        color: #fff;
+        font: inherit;
+        font-weight: 700;
+        cursor: pointer;
+        transition: background .15s ease;
+      }
+      button:hover { background: #1d4ed8; }
+      .error {
+        margin: 0 0 18px;
+        padding: 11px 13px;
+        border-radius: 8px;
+        background: #fee2e2;
+        color: #991b1b;
+      }
+      .success {
+        margin: 0 0 18px;
+        padding: 11px 13px;
+        border-radius: 8px;
+        background: #dcfce7;
+        color: #166534;
+      }
+      .create-user {
+        display: block;
+        margin-top: 18px;
+        color: #2563eb;
+        font-weight: 700;
+        text-align: center;
+        text-decoration: none;
+      }
+      .create-user:hover { text-decoration: underline; }
+      @media (max-width: 480px) { .login-card { padding: 26px; } }
+    </style>
+  </head>
+  <body>
+    <main class="login-card">
+      <h1>Pocket Smart AI</h1>
+      <p class="subtitle">Sign in to manage your monthly budget.</p>
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+          <p class="{{ category }}" role="status">{{ message }}</p>
+        {% endfor %}
+      {% endwith %}
+      {% if error %}<p class="error" role="alert">{{ error }}</p>{% endif %}
+      <form action="{{ url_for('login') }}" method="POST">
+        <div>
+          <label for="username">Username</label>
+          <input id="username" name="username" type="text" autocomplete="username" required>
+        </div>
+        <div>
+          <label for="password">Password</label>
+          <input id="password" name="password" type="password" autocomplete="current-password" required>
+        </div>
+        <button type="submit">Sign in</button>
+      </form>
+      <a class="create-user" href="{{ url_for('add_user') }}">Create New User</a>
+    </main>
+  </body>
+</html>

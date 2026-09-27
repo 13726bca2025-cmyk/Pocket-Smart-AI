@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Create user · Pocket Smart AI</title>
+    <style>
+      * { box-sizing: border-box; }
+      body {
+        min-height: 100vh;
+        margin: 0;
+        padding: 24px;
+        display: grid;
+        place-items: center;
+        background: linear-gradient(135deg, #f4f7fb, #e8eef7);
+        color: #253247;
+        font-family: Arial, sans-serif;
+      }
+      .card {
+        width: 100%;
+        max-width: 420px;
+        padding: 36px;
+        background: #fff;
+        border-radius: 14px;
+        box-shadow: 0 16px 40px rgba(34, 54, 82, .12);
+      }
+      h1 { margin: 0 0 8px; color: #17263c; font-size: 1.7rem; }
+      .subtitle { margin: 0 0 28px; color: #718096; }
+      form { display: grid; gap: 16px; }
+      label { display: block; margin-bottom: 7px; font-size: .92rem; font-weight: 700; }
+      input {
+        width: 100%;
+        padding: 12px 13px;
+        border: 1px solid #d6deea;
+        border-radius: 8px;
+        font: inherit;
+      }
+      input:focus { outline: 2px solid #bfdbfe; border-color: #3b82f6; }
+      button {
+        padding: 13px;
+        border: 0;
+        border-radius: 8px;
+        background: #2563eb;
+        color: #fff;
+        font: inherit;
+        font-weight: 700;
+        cursor: pointer;
+      }
+      button:hover { background: #1d4ed8; }
+      .error {
+        margin: 0 0 18px;
+        padding: 11px 13px;
+        border-radius: 8px;
+        background: #fee2e2;
+        color: #991b1b;
+      }
+      .back {
+        display: block;
+        margin-top: 18px;
+        color: #2563eb;
+        font-weight: 700;
+        text-align: center;
+        text-decoration: none;
+      }
+      .back:hover { text-decoration: underline; }
+      @media (max-width: 480px) { .card { padding: 26px; } }
+    </style>
+  </head>
+  <body>
+    <main class="card">
+      <h1>Create New User</h1>
+      <p class="subtitle">Add a user account for Pocket Smart AI.</p>
+      {% if error %}<p class="error" role="alert">{{ error }}</p>{% endif %}
+      <form action="{{ url_for('add_user') }}" method="POST">
+        <div>
+          <label for="username">Username</label>
+          <input id="username" name="username" type="text" autocomplete="username" required>
+        </div>
+        <div>
+          <label for="password">Password</label>
+          <input id="password" name="password" type="password" autocomplete="new-password" required>
+        </div>
+        <button type="submit">Create user</button>
+      </form>
+      <a class="back" href="{{ url_for('login') }}">Back to sign in</a>
+    </main>
+  </body>
+</html>

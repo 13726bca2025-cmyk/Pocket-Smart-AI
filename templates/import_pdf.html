@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>PDF Import · Pocket Smart AI</title>
+    <style>
+      * { box-sizing: border-box; }
+      body { margin: 0; min-height: 100vh; background: #f3f6fa; color: #263445; font-family: Arial, sans-serif; }
+      nav {
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 16px max(24px, calc((100% - 900px) / 2)); background: #fff;
+        box-shadow: 0 2px 12px rgba(30, 49, 68, .07);
+      }
+      .brand { color: #17263c; font-size: 1.15rem; font-weight: 700; text-decoration: none; }
+      .nav-links { display: flex; align-items: center; gap: 16px; }
+      .nav-links a { color: #40516a; font-weight: 700; text-decoration: none; }
+      .nav-links a:hover { color: #2563eb; }
+      .nav-links span { color: #718096; font-size: .9rem; }
+      main { width: 100%; max-width: 700px; margin: 40px auto; padding: 0 18px; }
+      h1 { margin: 0 0 8px; color: #17263c; font-size: 1.8rem; }
+      h2 { margin: 0 0 20px; color: #1d2d43; font-size: 1.2rem; }
+      .intro { margin: 0 0 24px; color: #718096; }
+      .card { padding: 28px; margin-bottom: 22px; background: #fff; border-radius: 12px; box-shadow: 0 10px 30px rgba(34, 54, 82, .08); }
+      form { display: grid; gap: 16px; }
+      label { display: block; margin-bottom: 7px; color: #40516a; font-size: .92rem; font-weight: 700; }
+      input[type="file"] { width: 100%; padding: 12px; border: 1px dashed #b8c5d6; border-radius: 8px; background: #f8fafc; font: inherit; }
+      button { padding: 13px 16px; border: 0; border-radius: 8px; background: #2563eb; color: #fff; font: inherit; font-weight: 700; cursor: pointer; }
+      button:hover { background: #1d4ed8; }
+      .error { padding: 13px 15px; margin: 0 0 18px; border-radius: 8px; background: #fee2e2; color: #991b1b; font-weight: 700; }
+      .summary-row { display: flex; justify-content: space-between; padding: 13px 0; border-bottom: 1px solid #edf0f4; }
+      .summary-row:last-child { border-bottom: 0; }
+      .total { color: #1d4ed8; font-size: 1.1rem; font-weight: 700; }
+      @media (max-width: 700px) {
+        nav { align-items: flex-start; gap: 14px; padding: 16px 18px; }
+        .nav-links { flex-wrap: wrap; justify-content: flex-end; gap: 11px; font-size: .9rem; }
+        main { margin: 28px auto; }
+        .card { padding: 22px; }
+      }
+    </style>
+  </head>
+  <body>
+    <nav>
+      <a class="brand" href="{{ url_for('dashboard') }}">Pocket Smart AI</a>
+      <div class="nav-links">
+        <span>Signed in as <strong>{{ username }}</strong></span>
+        <a href="{{ url_for('dashboard') }}">Dashboard</a>
+        <a href="{{ url_for('history') }}">History</a>
+        {% if session.get('role') == 'admin' %}<a href="{{ url_for('admin') }}">Admin Panel</a>{% endif %}
+        <a href="{{ url_for('import_statement') }}">Excel Import</a>
+        <a href="{{ url_for('logout') }}">Logout</a>
+      </div>
+    </nav>
+    <main>
+      <h1>Import PDF statement</h1>
+      <p class="intro">Upload a text-based bank statement with lines such as “01/09/2026 Swiggy 250”.</p>
+      <section class="card">
+        <h2>Choose a PDF file</h2>
+        {% if error %}<p class="error" role="alert">{{ error }}</p>{% endif %}
+        <form action="{{ url_for('import_pdf') }}" method="POST" enctype="multipart/form-data">
+          <div>
+            <label for="file">Bank statement (.pdf)</label>
+            <input id="file" name="file" type="file" accept=".pdf,application/pdf" required>
+          </div>
+          <button type="submit">Import PDF</button>
+        </form>
+      </section>
+      {% if summary %}
+        <section class="card">
+          <h2>Import summary</h2>
+          <div class="summary-row"><span>Extracted entries</span><strong>{{ summary.count }}</strong></div>
+          <div class="summary-row"><span>Income total</span><strong>{{ summary.income }}</strong></div>
+          <div class="summary-row"><span>Food total</span><strong>{{ summary.food }}</strong></div>
+          <div class="summary-row"><span>Rent total</span><strong>{{ summary.rent }}</strong></div>
+          <div class="summary-row"><span>Other total</span><strong>{{ summary.other }}</strong></div>
+          <div class="summary-row total"><span>Expense total</span><strong>{{ summary.expense }}</strong></div>
+        </section>
+      {% endif %}
+    </main>
+  </body>
+</html>

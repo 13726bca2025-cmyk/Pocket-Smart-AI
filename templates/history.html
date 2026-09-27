@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>History · Pocket Smart AI</title>
+    <style>
+      * { box-sizing:border-box; }
+      body { margin:0; background:#f3f6fa; color:#263445; font-family:Arial,sans-serif; }
+      nav { display:flex; align-items:center; justify-content:space-between; padding:16px max(24px,calc((100% - 900px)/2)); background:#fff; box-shadow:0 2px 12px rgba(30,49,68,.07); }
+      .brand { color:#17263c; font-size:1.15rem; font-weight:700; text-decoration:none; }
+      .nav-links { display:flex; align-items:center; gap:16px; }
+      .nav-links a { color:#40516a; font-weight:700; text-decoration:none; }
+      .nav-links a:hover { color:#2563eb; }
+      .nav-links span { color:#718096; font-size:.9rem; }
+      main { width:100%; max-width:1000px; margin:38px auto; padding:0 18px; }
+      h1 { margin:0 0 8px; color:#17263c; font-size:1.8rem; }
+      .intro { margin:0 0 24px; color:#718096; }
+      .card { padding:26px; background:#fff; border-radius:12px; box-shadow:0 10px 30px rgba(34,54,82,.08); overflow-x:auto; }
+      table { width:100%; border-collapse:collapse; text-align:left; }
+      th, td { padding:12px 13px; border:1px solid #e1e7ef; }
+      th { background:#eef3f9; color:#344255; font-size:.92rem; }
+      tbody tr:nth-child(even) { background:#f7f9fc; }
+      .type { font-weight:700; }
+      .income { color:#15803d; }
+      .expense { color:#b91c1c; }
+      .empty { padding:30px 12px; color:#718096; text-align:center; }
+      @media (max-width:750px) {
+        nav { align-items:flex-start; gap:14px; padding:16px 18px; }
+        .nav-links { flex-wrap:wrap; justify-content:flex-end; gap:10px; font-size:.9rem; }
+        main { margin:28px auto; }
+        .card { padding:16px; }
+        th,td { padding:9px 8px; font-size:.9rem; }
+      }
+    </style>
+  </head>
+  <body>
+    <nav>
+      <a class="brand" href="{{ url_for('dashboard') }}">Pocket Smart AI</a>
+      <div class="nav-links">
+        <span>Signed in as <strong>{{ username }}</strong></span>
+        <a href="{{ url_for('dashboard') }}">Dashboard</a>
+        <a href="{{ url_for('history') }}">History</a>
+        {% if session.get('role') == 'admin' %}<a href="{{ url_for('admin') }}">Admin Panel</a>{% endif %}
+        <a href="{{ url_for('import_statement') }}">Excel Import</a>
+        <a href="{{ url_for('import_pdf') }}">PDF Import</a>
+        <a href="{{ url_for('logout') }}">Logout</a>
+      </div>
+    </nav>
+    <main>
+      <h1>Transaction history</h1>
+      <p class="intro">Your transactions, with the latest dates first.</p>
+      <section class="card">
+        {% if transactions %}
+          <table>
+            <thead>
+              <tr>
+                <th>Date</th><th>Type</th><th>Amount</th><th>Category</th>
+                <th>Description</th><th>Food</th><th>Rent</th><th>Other</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for transaction in transactions %}
+                <tr>
+                  <td>{{ transaction.date }}</td>
+                  <td class="type {{ transaction.type }}">{{ transaction.type|title }}</td>
+                  <td>{{ transaction.amount }}</td>
+                  <td>{{ transaction.category }}</td>
+                  <td>{{ transaction.description }}</td>
+                  <td>{{ transaction.food }}</td>
+                  <td>{{ transaction.rent }}</td>
+                  <td>{{ transaction.other }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        {% else %}
+          <p class="empty">No transactions yet.</p>
+        {% endif %}
+      </section>
+    </main>
+  </body>
+</html>

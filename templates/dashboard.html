@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Dashboard · Pocket Smart AI</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+      * { box-sizing: border-box; }
+      body { margin: 0; background: #f3f6fa; color: #263445; font-family: Arial, sans-serif; }
+      nav { display:flex; align-items:center; justify-content:space-between; padding:16px max(24px,calc((100% - 900px)/2)); background:#fff; box-shadow:0 2px 12px rgba(30,49,68,.07); }
+      .brand { color:#17263c; font-size:1.15rem; font-weight:700; text-decoration:none; }
+      .nav-links { display:flex; align-items:center; gap:16px; }
+      .nav-links a { color:#40516a; font-weight:700; text-decoration:none; }
+      .nav-links a:hover { color:#2563eb; }
+      .nav-links span { color:#718096; font-size:.9rem; }
+      main { width:100%; max-width:900px; margin:38px auto; padding:0 18px; }
+      h1 { margin:0 0 8px; color:#17263c; font-size:1.8rem; }
+      h2 { margin:0 0 20px; color:#1d2d43; font-size:1.2rem; }
+      .intro { margin:0 0 24px; color:#718096; }
+      .card { padding:26px; margin-bottom:22px; background:#fff; border-radius:12px; box-shadow:0 10px 30px rgba(34,54,82,.08); }
+      .summary-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
+      .summary-item { padding:18px; border-radius:9px; background:#f7f9fc; }
+      .summary-item span { display:block; margin-bottom:8px; color:#718096; font-size:.9rem; }
+      .summary-item strong { font-size:1.5rem; }
+      .income strong { color:#15803d; }
+      .expense strong { color:#b91c1c; }
+      .balance strong { color:#1d4ed8; }
+      .last-transaction { margin-top:16px; color:#526176; }
+      form { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+      label { display:block; margin-bottom:7px; color:#40516a; font-size:.92rem; font-weight:700; }
+      input, select { width:100%; padding:12px 13px; border:1px solid #d6deea; border-radius:8px; background:#fff; font:inherit; }
+      input:focus, select:focus { outline:2px solid #bfdbfe; border-color:#3b82f6; }
+      button { grid-column:1 / -1; padding:13px 16px; border:0; border-radius:8px; background:#2563eb; color:#fff; font:inherit; font-weight:700; cursor:pointer; }
+      button:hover { background:#1d4ed8; }
+      .error, .notice { padding:13px 15px; margin:0 0 18px; border-radius:8px; font-weight:700; }
+      .error { background:#fee2e2; color:#991b1b; }
+      .notice { background:#dcfce7; color:#166534; }
+      .chart-wrap { position:relative; width:100%; height:340px; }
+      .empty { padding:32px 12px; color:#718096; text-align:center; }
+      .highlight { margin:18px 0 0; padding:12px 14px; border-radius:8px; background:#eff6ff; color:#1d4ed8; }
+      @media (max-width:700px) {
+        nav { align-items:flex-start; gap:14px; padding:16px 18px; }
+        .nav-links { flex-wrap:wrap; justify-content:flex-end; gap:11px; font-size:.9rem; }
+        main { margin:28px auto; }
+        .card { padding:21px; }
+        .summary-grid { grid-template-columns:1fr; }
+        form { grid-template-columns:1fr; }
+        button { grid-column:auto; }
+      }
+    </style>
+  </head>
+  <body>
+    <nav>
+      <a class="brand" href="{{ url_for('dashboard') }}">Pocket Smart AI</a>
+      <div class="nav-links">
+        <span>Signed in as <strong>{{ username }}</strong></span>
+        <a href="{{ url_for('dashboard') }}">Dashboard</a>
+        <a href="{{ url_for('history') }}">History</a>
+        {% if session.get('role') == 'admin' %}<a href="{{ url_for('admin') }}">Admin Panel</a>{% endif %}
+        <a href="{{ url_for('import_statement') }}">Excel Import</a>
+        <a href="{{ url_for('import_pdf') }}">PDF Import</a>
+        <a href="{{ url_for('logout') }}">Logout</a>
+      </div>
+    </nav>
+    <main>
+      <h1>Financial dashboard</h1>
+      <p class="intro">See your income, expenses, and balance at a glance.</p>
+
+      <section class="card">
+        <div class="summary-grid">
+          <div class="summary-item income"><span>Total Income</span><strong>{{ total_income }}</strong></div>
+          <div class="summary-item expense"><span>Total Expense</span><strong>{{ total_expense }}</strong></div>
+          <div class="summary-item balance"><span>Balance</span><strong>{{ balance }}</strong></div>
+        </div>
+        {% if last_transaction %}
+          <p class="last-transaction">Last transaction: {{ last_transaction.date }} · {{ last_transaction.type|title }} · {{ last_transaction.amount }}</p>
+        {% else %}
+          <p class="last-transaction">No transactions yet.</p>
+        {% endif %}
+      </section>
+
+      <section class="card">
+        <h2>Add transaction</h2>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% for category, message in messages %}
+            <p class="{{ 'error' if category == 'error' else 'notice' }}" role="status">{{ message }}</p>
+          {% endfor %}
+        {% endwith %}
+        <form action="{{ url_for('add_transaction') }}" method="POST">
+          <div><label for="date">Date</label><input id="date" name="date" type="date" required></div>
+          <div><label for="amount">Amount</label><input id="amount" name="amount" type="number" min="1" step="1" required></div>
+          <div>
+            <label for="type">Type</label>
+            <select id="type" name="type" required>
+              <option value="income">Income</option>
+              <option value="expense">Expense</option>
+            </select>
+          </div>
+          <div>
+            <label for="category">Category (optional)</label>
+            <select id="category" name="category">
+              <option value="">Automatic / none</option>
+              <option value="food">Food</option>
+              <option value="rent">Rent</option>
+              <option value="bills">Bills</option>
+              <option value="shopping">Shopping</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          <div style="grid-column:1 / -1">
+            <label for="description">Description (optional)</label>
+            <input id="description" name="description" type="text" maxlength="200" placeholder="e.g. Monthly salary or grocery shopping">
+          </div>
+          <button type="submit">Save transaction</button>
+        </form>
+      </section>
+
+      <section class="card">
+        <h2>Monthly income vs expense</h2>
+        {% if monthly_totals %}
+          <div class="chart-wrap"><canvas id="monthlyChart"></canvas></div>
+          {% if highest_month %}<p class="highlight">Highest spending month: <strong>{{ highest_month.month }}</strong> ({{ highest_month.expense_total }})</p>{% endif %}
+        {% else %}
+          <p class="empty">No data yet. Add a transaction to see your chart.</p>
+        {% endif %}
+      </section>
+    </main>
+    {% if monthly_totals %}
+      <script>
+        const monthLabels = {{ monthly_totals | map(attribute="month") | list | tojson }};
+        const incomeValues = {{ monthly_totals | map(attribute="income_total") | list | tojson }};
+        const expenseValues = {{ monthly_totals | map(attribute="expense_total") | list | tojson }};
+        new Chart(document.getElementById("monthlyChart"), {
+          type: "bar",
+          data: {
+            labels: monthLabels,
+            datasets: [
+              { label: "Income", data: incomeValues, backgroundColor: "#22c55e" },
+              { label: "Expense", data: expenseValues, backgroundColor: "#ef4444" }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: { y: { beginAtZero: true } }
+          }
+        });
+      </script>
+    {% endif %}
+  </body>
+</html>
